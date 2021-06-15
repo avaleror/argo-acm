@@ -4,7 +4,7 @@ metadata:
   name: argo-deploy-pr
   namespace: argo-deploy
   labels:
-    app: argo-deploy-app 
+    app: argo-deploy
 spec:
   clusterSelector:
     matchLabels:
