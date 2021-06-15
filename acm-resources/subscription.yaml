@@ -1,0 +1,16 @@
+apiVersion: apps.open-cluster-management.io/v1
+kind: Subscription
+metadata:
+  name: argo-deploy-sub
+  namespace: argo-deploy
+  labels:
+    app: argo-deploy-app
+  annotations:
+    apps.open-cluster-management.io/git-path: argo-acm/argo-deploy
+    apps.open-cluster-management.io/git-branch: master
+spec:
+  channel: argo-deploy/argo-deploy-ch
+  placement:
+    placementRef:
+      kind: PlacementRule
+      name: argo-deploy-pr
