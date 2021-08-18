@@ -6,7 +6,7 @@ metadata:
 spec:
   destination:
     namespace: pacman
-    server: https://api.aws-managed1.5d8a.sandbox1045.opentlc.com:6443
+    server: https://kubernetes.default.svc
   project: default
   source:
     path: app-lifecycle/pacman
