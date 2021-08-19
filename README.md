@@ -15,7 +15,7 @@ This provides an application deployer for ArgoCD using RHACM.
 ## How to use the repo
 - Clone the repo 
 - Log in an OpenShift cluster
-- Execute this command from inside the folder argo-acm ""oc apply -k acm- resources""
+- Execute this command from inside the folder argo-acm ```oc apply -k acm-resources```
 
 ## How to add a new app
 - Copy the application file pacman-app.yaml
