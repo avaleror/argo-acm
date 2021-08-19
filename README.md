@@ -1,4 +1,4 @@
-# Demonstrate multi resource application
+# Demonstrate aplication deployment using argo thrught RHACM
 ## Tool Requirements
 - OpenShift CLI Version >= 4.3.0<br>_Needed for kustomize_
 ```bash
