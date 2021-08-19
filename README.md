@@ -21,4 +21,4 @@ This provides an application deployer for ArgoCD using RHACM.
 - Copy the application file pacman-app.yaml
 - Change the file's name
 - Inside the new file add all the info regarding the new app (Argo project, git repo, etc...)
-- In the namespace file add the namespace you want to use for deploying your app and add the next label: "argocd.argoproj.io/managed-by: openshift-gitops" if you do not add this label you'll get a sync error on ArgoCD and the app won't be deployed. In this article you have the explanation: https://developers.redhat.com/articles/2021/08/03/managing-gitops-control-planes-secure-gitops-practices#application_delivery_with_openshift_gitops
+- In the namespace.yaml file add the namespace definition in yaml that you want to use for deploying your app and add the next label: "argocd.argoproj.io/managed-by: openshift-gitops" if you do not add this label you'll get a sync error on ArgoCD and the app won't be deployed. In this article you have the explanation: https://developers.redhat.com/articles/2021/08/03/managing-gitops-control-planes-secure-gitops-practices#application_delivery_with_openshift_gitops
