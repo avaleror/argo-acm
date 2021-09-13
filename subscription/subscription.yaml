@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-policies-github
+  namespace: acm-policies
+data:
+    path: governance/policies/
+    #path: governance/policies/CM-Configuration-Management
+    branch: master
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Subscription
+metadata:
+  name: demo-policies
+  namespace: acm-policies
+spec:
+  channel: acm-policies/demo-policies
+  placement:
+    local: true
+  packageFilter:
+    filterRef:
+      name: demo-policies-github
+

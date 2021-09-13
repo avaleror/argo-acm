@@ -1,0 +1,9 @@
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Channel
+metadata:
+  name: demo-policies
+  namespace: acm-policies
+spec:
+  type: GitHub
+  pathname: https://github.com/avaleror/argo-acm.git

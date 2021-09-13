@@ -1,0 +1,102 @@
+# This policy requires the Compliance Operator installes on the managed clusters.
+# It creates the settings for running CIS scans in the cluster and in the nodes.
+#
+# If set to "enforce" it'll install the setting for the scanning otherwise only will check if the setings exists.
+#
+# Note that OpenShift 4.6 is required.
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-comp-oper-setting
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CA Security Assessment and Authorization
+    policy.open-cluster-management.io/controls: CA-2 Security Assessments, CA-7 Continuous Monitoring
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: comp-op-scansettings
+        spec:
+          remediationAction: inform # will be overridden by remediationAction in parent policy
+          severity: high
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                # Creates a scansetting to run periodically scans once binded with a scansettingbinding
+                apiVersion: compliance.openshift.io/v1alpha1
+                kind: ScanSetting
+                metadata:
+                  name: default
+                  namespace: openshift-compliance
+                rawResultStorage:
+                  pvAccessModes:
+                    - ReadWriteOnce
+                  rotation: 3
+                  size: 1Gi
+                roles:
+                  - worker
+                  - master
+                scanTolerations:
+                  - effect: NoSchedule
+                    key: node-role.kubernetes.io/master
+                    operator: Exists
+                schedule: 0 1 * * *
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: comp-op-scansettings-binding
+        spec:
+          remediationAction: inform # will be overridden by remediationAction in parent policy
+          severity: high
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                # Creates a scansettingbinding to run CIS scans dalily at 1 am
+                apiVersion: compliance.openshift.io/v1alpha1
+                kind: ScanSettingBinding
+                metadata:
+                  name: cis-ocp4
+                profiles:
+                  # Node CIS checks
+                  - name: ocp4-cis-node
+                    kind: Profile
+                    apiGroup: compliance.openshift.io/v1alpha1
+                  # Cluster CIS checks
+                  - name: ocp4-cis
+                    kind: Profile
+                    apiGroup: compliance.openshift.io/v1alpha1
+                settingsRef:
+                  name: default
+                  kind: ScanSetting
+                  apiGroup: compliance.openshift.io/v1alpha1
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-comp-oper-setting
+placementRef:
+  name: placement-policy-comp-oper-setting
+  kind: PlacementRule
+  apiGroup: apps.open-cluster-management.io
+subjects:
+  - name: policy-comp-oper-setting
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: placement-policy-comp-oper-setting
+spec:
+  clusterConditions:
+    - status: "True"
+      type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions:
+      - {key: compliance, operator: In, values: ["true"]}

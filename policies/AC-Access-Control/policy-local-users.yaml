@@ -1,0 +1,85 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-local-users
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: AC Access Control
+    policy.open-cluster-management.io/controls: AC-6 Privilege
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: htpassw-secret
+        spec:
+          remediationAction: inform # will be overridden by remediationAction in parent policy
+          severity: high
+          namespaceSelector:
+            exclude: ["kube-*"]
+            include: ["default"]
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Secret
+                metadata:
+                  name: htpass-secret
+                  namespace: openshift-config
+                data:
+                  htpasswd: YWNtLWFkbWluOiQyeSQwNSRRRUZPcy5xTy5WR3R1ZVE2LzJlSXouL1ZrWC9La1IubjY0VUZTUC5iS3pIOUpYVXd2Qy9VQwphZG1pbjokMnkkMDUkSEV4MkQ0VnBpcE5NcnhKM1h0d1FITy52eGtUZ0Y0RUp5b1JrSE5SaWFBbThBVlgwRWRvUU8KY2x1c3Rlci11c2VyOiQyeSQwNSQ0bkozWGh3Smt3LnFDY0VUbWdoSEpPaDJ0Y2lTWVRvYzZUcThMSUs3cVBUZmhXSm85ZHgwLgplZGl0b3I6JDJ5JDA1JDl4cTJtOVZHc3NpSTlPTjl3OTdJeHVqekowTlBDeEpFSGZzUzFmNmxqakd2TWhydjhnQmQ2CnZpZXdlcjokMnkkMDUkd0dibC8xOFRJZXRCL3hQNHlSWmlIT1FWd2RyVzhtQk5wZDZiL3FuV1dETy5TQXFNcEtqMnkK
+                type: Opaque
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: htpassw-oauth-config
+        spec:
+          remediationAction: inform # will be overridden by remediationAction in parent policy
+          severity: high
+          namespaceSelector:
+            exclude: ["kube-*"]
+            include: ["default"]
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: config.openshift.io/v1
+                kind: OAuth
+                metadata:
+                  name: cluster
+                spec:
+                  identityProviders:
+                  - name: local_users
+                    mappingMethod: claim 
+                    type: HTPasswd
+                    htpasswd:
+                      fileData:
+                        name: htpass-secret
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-policy-local-users
+placementRef:
+  name: placement-policy-local-users
+  kind: PlacementRule
+  apiGroup: apps.open-cluster-management.io
+subjects:
+- name: policy-local-users
+  kind: Policy
+  apiGroup: policy.open-cluster-management.io
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: placement-policy-local-users
+spec:
+  clusterConditions:
+  - status: "True"
+    type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions:
+      - {key: localusers, operator: In, values: ["true"]}
